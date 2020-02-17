@@ -7,12 +7,16 @@
  * @FilePath: \ant-design\src\models\editor.js
  */
 import { queryCurrent, query as queryUsers } from '@/services/user';
-import { querySubTypeList, queryCommonList } from '@/services/editor';
+import { querySubTypeList, queryCommonList, queryPackageDetail } from '@/services/editor';
 
 const EditorModel = {
   namespace: 'editor',
   state: {
-    view: 'resource',  // resource/editor
+    // view: 'schema',  // resource/schema
+    // packageId: 'PK154028370486768500440581916343',
+    view: 'resource',
+    packageId: '',
+    packageDetail: {},
     panel: {
       visible: true,
       height: document.body.clientHeight - 200
@@ -49,6 +53,29 @@ const EditorModel = {
       });
     },
 
+    *fetchPackageDetail ({ payload }, { call, put }) {
+      const response = yield call(queryPackageDetail, payload);
+
+      if (response && response.papilioPackage && response.papilioPackage.schemas) {
+        const { schemas } = response.papilioPackage;
+
+        Object.entries(schemas).forEach(([key, item]) => {
+          schemas[key].key = item.name + Math.random();
+
+          if (schemas[key].json.type === 'array') {
+            schemas[key].data.forEach((i, n) => {
+              schemas[key].data[n].key = n;
+            });
+          }
+        });
+      }
+
+      yield put({
+        type: 'savePackageDetail',
+        payload: response
+      });
+    },
+
     *fetchCurrent (_, { call, put }) {
       const response = yield call(queryCurrent);
       yield put({
@@ -81,6 +108,14 @@ const EditorModel = {
 
     saveCommonList (state, action) {
       return { ...state, commonList: action.payload || [] };
+    },
+
+    changeSchemaView (state, action) {
+      return { ...state, ...action.payload };
+    },
+
+    savePackageDetail (state, action) {
+      return { ...state, packageDetail: action.payload || {} };
     },
 
     saveCurrentUser (state, action) {

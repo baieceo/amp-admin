@@ -15,3 +15,7 @@ export async function querySubTypeList () {
 export async function queryCommonList (subType) {
   return request(`http://localhost:3000/api/site/package/common?subType=${subType}`);
 }
+
+export async function queryPackageDetail (packageId) {
+  return request(`http://localhost:3000/api/site/package/common/detail?pkgId=${packageId}`);
+}

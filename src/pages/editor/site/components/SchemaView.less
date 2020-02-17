@@ -1,0 +1,111 @@
+.sechmaEditor {
+  padding: 24px 6px;
+  width: 490px;
+  font-size: 12px;
+  height: 100%;
+  background: #fff;
+  overflow: hidden;
+}
+
+.sechmaEditorMain {
+  height: 100%;
+}
+
+.schemaNavbar {
+  padding: 0 18px;
+  display: flex;
+  font-size: 14px;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.schemaEditorScroll {
+  overflow: hidden;
+  overflow-y: auto;
+  height: calc(100% - 20px);
+
+  &::-webkit-scrollbar {
+    height: 6px;
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    border-radius: 6px;
+    background: rgba(0,0,0,.3);
+  }
+}
+
+.schemaEditorContainer {
+  padding: 0 12px 0 18px;
+}
+
+.sechmaItemContainer {
+  padding: 0 0 24px;
+
+  :global(.ant-collapse) {
+    background: transparent;
+    border: none;
+    border-top: 1px solid #f0f0f0;
+  }
+
+  :global(.ant-collapse-content) {
+    border-color: #f0f0f0;
+  }
+
+  :global(.ant-collapse > .ant-collapse-item > .ant-collapse-header) {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 0;
+    padding: 0 12px 0 40px;
+    height: 38px;
+    border-bottom: none;
+
+    p {
+      margin: 0;
+      padding: 0;
+      width: 60%;
+      overflow: hidden;
+      font-size: 14px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  :global(.ant-collapse > .ant-collapse-item) {
+    border-color: #f0f0f0;
+  }
+}
+
+.sechmaItemTitle {
+  font-size: 14px;
+  font-weight: normal;
+  padding: 10px 0;
+}
+
+.sechmaCollapseIcon {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  cursor: move;
+  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAAPlJREFUWAljYBgFAxwCzCTYzwRUawnEmkD8HIh/AzEy4AJyHIFYHIifAvF/ICYIWAiqQCiIAjK9oFx7IF2NkAKzQHxFqBiIXgpl46VAviIW6CEpBFnAi8QHsWGWg4T1keTwMklxwCUkk+4D2Z+R+CA2SAwGkNXCxCimQY61AmI3IAbFNzoAibkDMUgNKR5DN2eE8YdtNlQCRuQSYiKTlMRCSjZEVovXHaQ4ADlrDdpsCMqio9kQb5yjS45mQ1JyAXLWIlQbIqtFD3UUPikOGM2GKEE3bDjUzoZOwJAZFI1SJaBDRnZteJEWiRRUZhBqlI7WhrQIedqaCQDCKDm/ocKxtgAAAABJRU5ErkJggg==') no-repeat 50% 50%;
+  background-size: 100%;
+}
+
+.sechmaPropItem {
+  margin-bottom: 20px;
+}
+
+.sechmaPropTitle {
+  display: flex;
+  max-height: 22px;
+  line-height: 22px;
+  margin-bottom: 8px;
+  color: rgba(0, 0, 0, .85);
+}
+
+.sechmaPropMeta {
+  margin: 0 0 0 8px;
+  color: rgba(0,0,0,.45);
+}

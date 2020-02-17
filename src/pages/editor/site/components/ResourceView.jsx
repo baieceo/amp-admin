@@ -5,7 +5,6 @@ import { CloseOutlined } from '@ant-design/icons';
 import styles from './ResourceView.less';
 
 const { TabPane } = Tabs;
-const { Meta } = Card;
 
 const ResourceView = ({ dispatch, panel, subTypeList, commonList }) => {
   const [subType, setSubType] = useState();
@@ -19,15 +18,15 @@ const ResourceView = ({ dispatch, panel, subTypeList, commonList }) => {
     }
   }
 
-  function handleWindowResize () {
+  function handleChangeSchemaView (common) {
     if (dispatch) {
       dispatch({
-        type: 'editor/changeWindowResize',
+        type: 'editor/changeSchemaView',
         payload: {
-          width: document.body.clientWidth,
-          height: document.body.clientHeight,
+          packageId: common.packageId,
+          view: 'schema'
         }
-      })
+      });
     }
   }
 
@@ -38,10 +37,6 @@ const ResourceView = ({ dispatch, panel, subTypeList, commonList }) => {
         type: 'editor/fetchTypeList',
       });
     }
-
-    window.addEventListener('resize', handleWindowResize);
-
-    return () => window.removeEventListener('resize', handleWindowResize);
   }, []);
 
   // 设置默认 subType
@@ -92,6 +87,7 @@ const ResourceView = ({ dispatch, panel, subTypeList, commonList }) => {
                           className={styles.resourceCard}
                           title={commonItem.title}
                           key={commonItem.id}
+                          onClick={() => handleChangeSchemaView(commonItem)}
                         >
                           <img alt={commonItem.title} src={commonItem.snapshot} />
                         </Card>
