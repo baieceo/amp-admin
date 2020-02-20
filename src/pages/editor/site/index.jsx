@@ -1,4 +1,4 @@
-import { Button, Card, Steps, Result, Descriptions } from 'antd';
+import { Spin } from 'antd';
 import React, { useEffect } from 'react';
 import { connect } from 'dva';
 import { GridContent } from '@ant-design/pro-layout';
@@ -14,7 +14,7 @@ const Panel = props => {
   }
 
   if (view === 'resource') {
-    return <ResourceView />
+    return <ResourceView />;
   }
 
   if (view === 'schema') {
@@ -24,18 +24,39 @@ const Panel = props => {
   return null;
 };
 
+const Preview = props => {
+  console.log(props);
+
+  return (
+    <div className={styles.previewBox}>
+      <div className={styles.previewIframe}>
+        <div className={styles.previewScroll}>
+          <Spin tip="loading..." spinning={false}>
+            <iframe
+              title="sanbox"
+              src="http://localhost:3000/sandbox"
+              frameBorder="0"
+              style={{ height: '300px', width: '100%', display: 'block' }}
+            />
+          </Spin>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const EditorView = props => {
   const { editor, dispatch } = props;
 
-  function handleWindowResize () {
+  function handleWindowResize() {
     if (dispatch) {
       dispatch({
         type: 'editor/changeWindowResize',
         payload: {
           width: document.body.clientWidth,
           height: document.body.clientHeight,
-        }
-      })
+        },
+      });
     }
   }
 
@@ -52,7 +73,9 @@ const EditorView = props => {
           <div className={styles.panel}>
             <Panel visible={editor.panel.visible} view={editor.view} />
           </div>
-          <div className={styles.preview}>右侧</div>
+          <div className={styles.preview}>
+            <Preview />
+          </div>
         </div>
       </div>
     </GridContent>
