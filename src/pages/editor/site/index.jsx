@@ -3,14 +3,19 @@ import React, { useEffect } from 'react';
 import { connect } from 'dva';
 import { GridContent } from '@ant-design/pro-layout';
 import styles from './index.less';
+import PageView from './components/PageView';
 import ResourceView from './components/ResourceView';
 import SchemaView from './components/SchemaView';
 
 const Panel = props => {
-  const { visible, view } = props;
+  const { visible, view, siteId } = props;
 
-  if (!visible) {
+  if (!visible || siteId === -1) {
     return null;
+  }
+
+  if (view === 'page') {
+    return <PageView />;
   }
 
   if (view === 'resource') {
@@ -46,7 +51,7 @@ const Preview = props => {
 };
 
 const EditorView = props => {
-  const { editor, dispatch } = props;
+  const { editor, dispatch, match } = props;
 
   function handleWindowResize() {
     if (dispatch) {
@@ -60,18 +65,29 @@ const EditorView = props => {
     }
   }
 
+  function changeNoticeSiteId(value) {
+    if (dispatch) {
+      dispatch({
+        type: 'editor/changeNoticeSiteId',
+        payload: value,
+      });
+    }
+  }
+
   useEffect(() => {
+    changeNoticeSiteId(Number(match.params.siteId));
+
     window.addEventListener('resize', handleWindowResize);
 
     return () => window.removeEventListener('resize', handleWindowResize);
-  });
+  }, []);
 
   return (
     <GridContent>
       <div className={styles.layout}>
         <div className={styles.body}>
           <div className={styles.panel}>
-            <Panel visible={editor.panel.visible} view={editor.view} />
+            <Panel visible={editor.panel.visible} view={editor.view} siteId={editor.siteId} />
           </div>
           <div className={styles.preview}>
             <Preview />

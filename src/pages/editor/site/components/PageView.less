@@ -1,0 +1,191 @@
+.pageContainer {
+  width: 490px;
+  height: 100%;
+  overflow: hidden;
+  background: #fff;
+  box-shadow: 3px 0 16px rgba(0, 0, 0, 0.06);
+  user-select: none;
+
+  h3 {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 24px 24px 20px;
+    font-weight: 400;
+    font-size: 16px;
+  }
+}
+
+.pageList {
+  position: relative;
+  height: calc(100% - 135px);
+  margin: 0 8px 0 20px;
+  padding-left: 4px;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 6px;
+  }
+}
+
+.pageItem {
+  position: relative;
+  z-index: 0;
+  display: flex;
+  align-items: center;
+  height: 56px;
+  margin: 0 16px 10px 0;
+  color: rgba(0, 0, 0, 0.65);
+  font-size: 14px;
+  border-radius: 2px;
+  cursor: default;
+
+  &:hover {
+    background-color: #f9f9f9;
+    .pageItemDrag {
+      visibility: visible;
+    }
+  }
+}
+
+.pageItemActive {
+  &,
+  &:hover {
+    color: #fff;
+    background: #1890ff;
+
+    .pageItemDrag {
+      background: url(//gw.alipayobjects.com/zos/rmsportal/lUyOQSBKeFhDvzXyKBnf.png) no-repeat 0 0;
+      background-size: 20px 20px;
+      visibility: visible;
+    }
+
+    .pageItemTitle {
+      h4,
+      span {
+        color: #fff;
+      }
+
+      h4 {
+        em {
+          color: #1890ff;
+          background: #fff;
+        }
+      }
+    }
+  }
+}
+
+.pageItemDrag {
+  width: 20px;
+  height: 20px;
+  margin-left: 8px;
+  background: url(//gw.alipayobjects.com/zos/rmsportal/zXbHxairaoijcjsLrhHK.png) no-repeat 0 0;
+  background-size: 20px 20px;
+  outline: 0;
+  visibility: hidden;
+}
+
+.pageItemTitle {
+  width: 225px;
+  height: 56px;
+  padding-left: 4px;
+
+  span {
+    display: block;
+    width: 136px;
+    height: 19px;
+    overflow: hidden;
+    color: rgba(0, 0, 0, 0.45);
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+
+  h4 {
+    position: relative;
+    display: flex;
+    align-items: center;
+    margin: 0;
+    padding: 8px 0 0;
+    font-weight: 400;
+    font-size: 14px;
+
+    span {
+      width: auto;
+      max-width: 180px;
+      margin-right: 8px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    em {
+      width: 38px;
+      height: 19px;
+      margin-right: 8px;
+      color: rgba(0, 0, 0, 0.45);
+      font-size: 11px;
+      font-style: normal;
+      line-height: 19px;
+      text-align: center;
+      background: rgba(0, 0, 0, 0.05);
+      border-radius: 320px;
+      transform: scale(0.9);
+    }
+  }
+}
+
+.pageItemSetting {
+  position: absolute;
+  top: 12px;
+  right: 18px;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+  cursor: pointer;
+  transition: all 0.15s ease-in-out;
+}
+
+.pageItemSettingPopover {
+  &,
+  li {
+    margin: 0;
+    padding: 0;
+  }
+
+  li {
+    padding: 8px 12px;
+    color: rgba(0, 0, 0, 0.65);
+    font-size: 14px;
+    background: #fff;
+    cursor: pointer;
+
+    &:hover {
+      color: rgba(0, 0, 0, 0.5);
+    }
+
+    span {
+      padding-right: 10px;
+    }
+  }
+}
+
+.pageItemSettingDisabled {
+  opacity: 0.25;
+
+  &,
+  &:hover {
+    cursor: default;
+  }
+}
+
+.pageAdd {
+  padding: 0 40px;
+}
