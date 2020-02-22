@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-02-16 14:07:47
- * @LastEditTime: 2020-02-21 21:30:07
+ * @LastEditTime: 2020-02-22 19:46:37
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \ant-design\src\models\editor.js
@@ -24,6 +24,7 @@ const EditorModel = {
     view: 'page',
     packageId: '',
     packageDetail: {},
+    renderHost: 'http://render.baie.net.cn',
     panel: {
       visible: true,
       height: document.body.clientHeight - 200,
@@ -33,7 +34,10 @@ const EditorModel = {
     commonList: [],
     siteId: -1,
     pageId: -1,
+    pageName: '',
+    pageUrl: '',
     pageList: [],
+    pageData: {},
     window: {
       width: document.body.clientWidth,
       height: document.body.clientHeight,
@@ -91,10 +95,17 @@ const EditorModel = {
         response.page &&
         response.page[payload.selectedIndex]
       ) {
-        const pageId = response.page[payload.selectedIndex].id;
+        const pageData = response.page[payload.selectedIndex];
+        const pageId = pageData.id;
+
         yield put({
           type: 'savePageId',
           payload: pageId,
+        });
+
+        yield put({
+          type: 'savePageData',
+          payload: pageData,
         });
       }
     },
@@ -149,6 +160,55 @@ const EditorModel = {
       });
     },
 
+    *updatePageTitle({ payload }, { put, call, select }) {
+      const pageData = yield select(state => ({
+        siteId: state.editor.siteId,
+        data: {
+          page: state.editor.pageList.map(item => {
+            const page = { ...item };
+
+            if (page.id === payload.pageId) {
+              page.title = payload.title;
+            }
+
+            return page;
+          }),
+        },
+      }));
+
+      const response = yield call(updateSitePage, pageData);
+
+      yield put({
+        type: 'savePageList',
+        payload: response,
+      });
+    },
+
+    *updatePageName({ payload }, { put, call, select }) {
+      const pageData = yield select(state => ({
+        siteId: state.editor.siteId,
+        data: {
+          page: state.editor.pageList.map(item => {
+            const page = { ...item };
+
+            if (page.id === payload.pageId) {
+              page.name = payload.name;
+              page.url = `${state.editor.renderHost}/${state.editor.siteId}/${payload.name}`;
+            }
+
+            return page;
+          }),
+        },
+      }));
+
+      const response = yield call(updateSitePage, pageData);
+
+      yield put({
+        type: 'savePageList',
+        payload: response,
+      });
+    },
+
     *addSitePage(_, { put, call, select }) {
       const pageData = yield select(state => {
         const model = {
@@ -158,18 +218,21 @@ const EditorModel = {
           },
         };
 
-        const { pageOrder } = maxBy(state.editor.pageList, o => o.pageOrder);
+        const target = maxBy(state.editor.pageList, o => o.pageOrder);
+        const pageOrder = target ? target.pageOrder : 0;
+        const name = `${+new Date()}.html`;
 
         model.data.page.push({
           componentList: [],
           isHomePage: false,
           meta: {},
-          name: `${+new Date()}.html`,
+          name,
           pageOrder: pageOrder + 1,
           schemaData: [],
           siteId: state.editor.siteId,
           snapshot: '',
           templatePath: 'pages/detail/index.html',
+          url: `${state.editor.renderHost}/${state.editor.siteId}/${name}`,
           title: '新建页面',
         });
 
@@ -184,10 +247,19 @@ const EditorModel = {
       });
     },
 
-    *changeNoticePageId({ payload }, { put }) {
+    *changeNoticePageId({ payload }, { put, select }) {
       yield put({
         type: 'savePageId',
         payload,
+      });
+
+      const pageData = yield select(state =>
+        state.editor.pageList.find(item => item.id === payload),
+      );
+
+      yield put({
+        type: 'savePageData',
+        payload: pageData,
       });
     },
 
@@ -208,6 +280,7 @@ const EditorModel = {
         },
       };
     },
+
     saveSubTypeList(state, action) {
       return { ...state, subTypeList: action.payload || [] };
     },
@@ -242,6 +315,10 @@ const EditorModel = {
 
     saveSiteId(state, action) {
       return { ...state, siteId: action.payload };
+    },
+
+    savePageData(state, action) {
+      return { ...state, pageData: action.payload };
     },
 
     saveCurrentUser(state, action) {

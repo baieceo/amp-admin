@@ -1,11 +1,21 @@
-import React, { useEffect } from 'react';
+import React, { useRef, useEffect } from 'react';
 import { connect } from 'dva';
-import { Button, Popover, Modal } from 'antd';
-import { CloseOutlined, SettingOutlined, HomeOutlined, DeleteOutlined } from '@ant-design/icons';
+import { Empty, Input, Button, Popover, Modal } from 'antd';
+import {
+  CloseOutlined,
+  EditOutlined,
+  LinkOutlined,
+  SettingOutlined,
+  HomeOutlined,
+  DeleteOutlined,
+} from '@ant-design/icons';
 import classNames from 'classnames';
 import styles from './PageView.less';
 
 const PageView = props => {
+  const { onPageChange } = props;
+  const zIndex = 9999;
+  const inputRef = useRef(null);
   const { dispatch, pageList, siteId, pageId } = props;
 
   function fetchPageList(selectedIndex) {
@@ -32,7 +42,7 @@ const PageView = props => {
   function handleChangePageId(value) {
     if (dispatch) {
       dispatch({
-        type: 'editor/savePageId',
+        type: 'editor/changeNoticePageId',
         payload: value,
       });
     }
@@ -43,7 +53,7 @@ const PageView = props => {
     e.nativeEvent.stopImmediatePropagation();
   }
 
-  function handleUpdateHomePage(e, action, pid) {
+  function handleUpdateHomePage(e, action, pid, value) {
     stopPropagation(e);
 
     if (dispatch && action === 'changeHomePage') {
@@ -57,7 +67,7 @@ const PageView = props => {
       Modal.confirm({
         title: '删除页面',
         content: '是否确认删除该页面？',
-        zIndex: 9999,
+        zIndex,
         onOk: async () => {
           dispatch({
             type: 'editor/removeSitePage',
@@ -74,12 +84,79 @@ const PageView = props => {
         type: 'editor/addSitePage',
       });
     }
+
+    if (dispatch && action === 'changePageTitle') {
+      Modal.confirm({
+        zIndex,
+        title: '重命名页面',
+        content: (
+          <>
+            <h4>页面名称</h4>
+            <Input placeholder="输入页面标题" defaultValue={value} ref={inputRef} />
+          </>
+        ),
+        okText: '修改',
+        onOk() {
+          const title = inputRef.current.state.value;
+
+          if (title) {
+            dispatch({
+              type: 'editor/updatePageTitle',
+              payload: {
+                pageId: pid,
+                title,
+              },
+            });
+          }
+
+          return Promise.resolve();
+        },
+      });
+    }
+
+    if (dispatch && action === 'changePageName') {
+      Modal.confirm({
+        zIndex,
+        title: '修改页面路径',
+        content: (
+          <>
+            <h4>页面路径</h4>
+            <Input
+              placeholder="输入页面路径"
+              defaultValue={value.replace(/\.html$/, '')}
+              ref={inputRef}
+              addonAfter=".html"
+            />
+          </>
+        ),
+        okText: '修改',
+        onOk() {
+          const v = inputRef.current.state.value;
+
+          if (v) {
+            dispatch({
+              type: 'editor/updatePageName',
+              payload: {
+                pageId: pid,
+                name: `${v}.html`,
+              },
+            });
+          }
+        },
+      });
+    }
   }
 
   // 初始化
   useEffect(() => {
     fetchPageList(0);
   }, []);
+
+  useEffect(() => {
+    if (pageId !== -1) {
+      onPageChange();
+    }
+  }, [pageId]);
 
   return (
     <div className={styles.pageContainer}>
@@ -94,7 +171,9 @@ const PageView = props => {
         />
       </h3>
       <div className={styles.pageList}>
-        {pageList.length > 0 &&
+        {pageList.length === 0 ? (
+          <Empty />
+        ) : (
           pageList.map(item => (
             <div
               className={classNames(styles.pageItem, item.id === pageId && styles.pageItemActive)}
@@ -114,6 +193,22 @@ const PageView = props => {
                 trigger="hover"
                 content={
                   <ul className={styles.pageItemSettingPopover}>
+                    <li
+                      onClick={e => {
+                        handleUpdateHomePage(e, 'changePageTitle', item.id, item.title);
+                      }}
+                    >
+                      <EditOutlined />
+                      重命名
+                    </li>
+                    <li
+                      onClick={e => {
+                        handleUpdateHomePage(e, 'changePageName', item.id, item.name);
+                      }}
+                    >
+                      <LinkOutlined />
+                      修改路径
+                    </li>
                     <li
                       className={classNames(
                         (pageList.length <= 1 || item.isHomePage) && styles.pageItemSettingDisabled,
@@ -148,7 +243,8 @@ const PageView = props => {
                 </span>
               </Popover>
             </div>
-          ))}
+          ))
+        )}
       </div>
       <div className={styles.pageAdd}>
         <Button block size="large" onClick={e => handleUpdateHomePage(e, 'addSitePage')}>

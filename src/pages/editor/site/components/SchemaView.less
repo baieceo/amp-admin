@@ -1,10 +1,10 @@
 .sechmaEditor {
-  padding: 24px 6px;
   width: 490px;
-  font-size: 12px;
   height: 100%;
-  background: #fff;
+  padding: 24px 6px;
   overflow: hidden;
+  font-size: 12px;
+  background: #fff;
 }
 
 .sechmaEditorMain {
@@ -12,26 +12,26 @@
 }
 
 .schemaNavbar {
-  padding: 0 18px;
   display: flex;
-  font-size: 14px;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  padding: 0 18px;
+  font-size: 14px;
 }
 
 .schemaEditorScroll {
+  height: calc(100% - 20px);
   overflow: hidden;
   overflow-y: auto;
-  height: calc(100% - 20px);
 
   &::-webkit-scrollbar {
-    height: 6px;
     width: 6px;
+    height: 6px;
   }
 
   &::-webkit-scrollbar-thumb {
+    background: rgba(0, 0, 0, 0.3);
     border-radius: 6px;
-    background: rgba(0,0,0,.3);
   }
 }
 
@@ -56,19 +56,18 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
+    height: 38px;
     margin-bottom: 0;
     padding: 0 12px 0 40px;
-    height: 38px;
     border-bottom: none;
 
     p {
+      width: 60%;
       margin: 0;
       padding: 0;
-      width: 60%;
       overflow: hidden;
       font-size: 14px;
       white-space: nowrap;
-      overflow: hidden;
       text-overflow: ellipsis;
     }
   }
@@ -79,18 +78,19 @@
 }
 
 .sechmaItemTitle {
-  font-size: 14px;
-  font-weight: normal;
   padding: 10px 0;
+  font-weight: normal;
+  font-size: 14px;
 }
 
 .sechmaCollapseIcon {
   display: inline-block;
   width: 16px;
   height: 16px;
-  cursor: move;
-  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAAPlJREFUWAljYBgFAxwCzCTYzwRUawnEmkD8HIh/AzEy4AJyHIFYHIifAvF/ICYIWAiqQCiIAjK9oFx7IF2NkAKzQHxFqBiIXgpl46VAviIW6CEpBFnAi8QHsWGWg4T1keTwMklxwCUkk+4D2Z+R+CA2SAwGkNXCxCimQY61AmI3IAbFNzoAibkDMUgNKR5DN2eE8YdtNlQCRuQSYiKTlMRCSjZEVovXHaQ4ADlrDdpsCMqio9kQb5yjS45mQ1JyAXLWIlQbIqtFD3UUPikOGM2GKEE3bDjUzoZOwJAZFI1SJaBDRnZteJEWiRRUZhBqlI7WhrQIedqaCQDCKDm/ocKxtgAAAABJRU5ErkJggg==') no-repeat 50% 50%;
+  background: url('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAACAAAAAgCAYAAABzenr0AAAABGdBTUEAALGPC/xhBQAAAPlJREFUWAljYBgFAxwCzCTYzwRUawnEmkD8HIh/AzEy4AJyHIFYHIifAvF/ICYIWAiqQCiIAjK9oFx7IF2NkAKzQHxFqBiIXgpl46VAviIW6CEpBFnAi8QHsWGWg4T1keTwMklxwCUkk+4D2Z+R+CA2SAwGkNXCxCimQY61AmI3IAbFNzoAibkDMUgNKR5DN2eE8YdtNlQCRuQSYiKTlMRCSjZEVovXHaQ4ADlrDdpsCMqio9kQb5yjS45mQ1JyAXLWIlQbIqtFD3UUPikOGM2GKEE3bDjUzoZOwJAZFI1SJaBDRnZteJEWiRRUZhBqlI7WhrQIedqaCQDCKDm/ocKxtgAAAABJRU5ErkJggg==')
+    no-repeat 50% 50%;
   background-size: 100%;
+  cursor: move;
 }
 
 .sechmaPropItem {
@@ -100,12 +100,12 @@
 .sechmaPropTitle {
   display: flex;
   max-height: 22px;
-  line-height: 22px;
   margin-bottom: 8px;
-  color: rgba(0, 0, 0, .85);
+  color: rgba(0, 0, 0, 0.85);
+  line-height: 22px;
 }
 
 .sechmaPropMeta {
   margin: 0 0 0 8px;
-  color: rgba(0,0,0,.45);
+  color: rgba(0, 0, 0, 0.45);
 }
