@@ -12,6 +12,15 @@ export const isAntDesignPro = () => {
   return window.location.hostname === 'preview.pro.ant.design';
 }; // 给官方演示站点用，用于关闭真实开发环境不需要使用的特性
 
+export const generateGuid = () =>
+  'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    // eslint-disable-next-line no-bitwise
+    const r = (Math.random() * 16) | 0;
+    // eslint-disable-next-line no-bitwise
+    const v = c === 'x' ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+
 export const isAntDesignProOrDev = () => {
   const { NODE_ENV } = process.env;
 

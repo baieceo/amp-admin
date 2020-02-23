@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-02-16 16:01:29
- * @LastEditTime: 2020-02-21 20:03:40
+ * @LastEditTime: 2020-02-23 16:57:56
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \ant-design\src\services\editor.js
@@ -45,4 +45,14 @@ export async function updateSitePage(params) {
     method: 'PUT',
     data: params,
   });
+}
+
+export async function updatePageComponent(params) {
+  return request(
+    `http://localhost:3000/api/site/${params.siteId}/${params.pageId}/component/update`,
+    {
+      method: 'POST',
+      data: params,
+    },
+  );
 }

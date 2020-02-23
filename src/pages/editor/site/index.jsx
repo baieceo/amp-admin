@@ -11,38 +11,29 @@ import SchemaView from './components/SchemaView';
 
 const ButtonGroup = Button.Group;
 
-function handlePageChange(props) {
+const send = (action, payload) => {
   window.frames.sandbox.postMessage(
     {
-      action: 'render',
-      payload: {
-        previewData: {
-          componentList: [],
-          data: [],
-          env: 'EDITOR',
-          pageId: props.pageId,
-          siteId: props.siteId,
-          templatePath: 'pages/index/index.html',
-        },
-      },
+      action,
+      payload,
     },
     '*',
   );
-}
+};
 
 const Panel = props => {
-  const { panel, view, siteId } = props;
+  const { panel, view, siteId, onPageChange, onResourceSelect } = props;
 
   if (!panel.visible || siteId === -1) {
     return null;
   }
 
   if (view === 'page') {
-    return <PageView onPageChange={() => handlePageChange(props)} />;
+    return <PageView onPageChange={onPageChange} />;
   }
 
   if (view === 'resource') {
-    return <ResourceView />;
+    return <ResourceView onSelect={onResourceSelect} />;
   }
 
   if (view === 'schema') {
@@ -54,7 +45,7 @@ const Panel = props => {
 
 const Preview = props => {
   // console.log(props);
-  const { pageData } = props;
+  const { pageData, onPageChange } = props;
 
   return (
     <>
@@ -77,7 +68,7 @@ const Preview = props => {
                 title="sanbox"
                 src="http://localhost:3000/sandbox"
                 frameBorder="0"
-                onLoad={() => handlePageChange(props)}
+                onLoad={() => onPageChange(props)}
                 style={{ height: '300px', width: '100%', display: 'block' }}
               />
             </Spin>
@@ -146,6 +137,29 @@ const EditorView = props => {
     }
   }
 
+  function handlePageChange() {
+    send('render', {
+      previewData: {
+        componentList: [],
+        data: [],
+        env: 'EDITOR',
+        pageId: editor.pageId,
+        siteId: editor.siteId,
+        templatePath: 'pages/index/index.html',
+      },
+    });
+  }
+
+  function handleResourceSelect(e) {
+    console.log(123123, e);
+    if (dispatch) {
+      dispatch({
+        type: 'editor/addComment',
+        payload: e,
+      });
+    }
+  }
+
   useEffect(() => {
     changeNoticeSiteId(Number(match.params.siteId));
 
@@ -179,10 +193,14 @@ const EditorView = props => {
         </div>
         <div className={styles.body}>
           <div className={styles.panel}>
-            <Panel {...editor} />
+            <Panel
+              {...editor}
+              onPageChange={handlePageChange}
+              onResourceSelect={handleResourceSelect}
+            />
           </div>
           <div className={styles.preview}>
-            <Preview {...editor} />
+            <Preview {...editor} onPageChange={handlePageChange} />
           </div>
         </div>
       </div>

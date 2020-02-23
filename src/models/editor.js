@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-02-16 14:07:47
- * @LastEditTime: 2020-02-22 19:46:37
+ * @LastEditTime: 2020-02-23 17:16:43
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \ant-design\src\models\editor.js
@@ -12,6 +12,7 @@ import {
   queryPackageDetail,
   queryPageList,
   updateSitePage,
+  updatePageComponent,
 } from '@/services/editor';
 import maxBy from 'lodash/maxBy';
 
@@ -32,6 +33,7 @@ const EditorModel = {
     sitePage: {},
     subTypeList: [],
     commonList: [],
+    componentList: [],
     siteId: -1,
     pageId: -1,
     pageName: '',
@@ -269,6 +271,27 @@ const EditorModel = {
         payload,
       });
     },
+
+    *addComment({ payload }, { call, put, select }) {
+      const componentList = yield select(state => state.editor.componentList);
+      const { pageId, siteId } = yield select(state => state.editor);
+
+      componentList.push(payload);
+
+      yield put({
+        type: 'saveComponentList',
+        payload: componentList,
+      });
+
+      const params = {
+        pageId,
+        siteId,
+        componentList,
+        data: [],
+      };
+
+      yield call(updatePageComponent, params);
+    },
   },
   reducers: {
     changePanelVisible(state, { payload: value }) {
@@ -319,6 +342,10 @@ const EditorModel = {
 
     savePageData(state, action) {
       return { ...state, pageData: action.payload };
+    },
+
+    saveComponentList(state, action) {
+      return { ...state, componentList: action.payload || [] };
     },
 
     saveCurrentUser(state, action) {

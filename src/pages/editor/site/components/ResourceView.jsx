@@ -2,30 +2,37 @@ import React, { useState, useEffect } from 'react';
 import { connect } from 'dva';
 import { Tabs, Card } from 'antd';
 import { CloseOutlined } from '@ant-design/icons';
+import { generateGuid } from '@/utils/utils';
 import styles from './ResourceView.less';
 
 const { TabPane } = Tabs;
 
-const ResourceView = ({ dispatch, panel, subTypeList, commonList }) => {
+const ResourceView = ({ dispatch, panel, subTypeList, commonList, onSelect }) => {
   const [subType, setSubType] = useState();
 
-  function handlePanelVisible (value) {
+  function handlePanelVisible(value) {
     if (dispatch) {
       dispatch({
         type: 'editor/changePanelVisible',
         payload: value,
-      })
+      });
     }
   }
 
-  function handleChangeSchemaView (common) {
+  function handleChangeSchemaView(component) {
     if (dispatch) {
       dispatch({
         type: 'editor/changeSchemaView',
         payload: {
-          packageId: common.packageId,
-          view: 'schema'
-        }
+          packageId: component.packageId,
+          view: 'schema',
+        },
+      });
+
+      onSelect({
+        name: component.name,
+        packageId: component.packageId,
+        uid: `component_${`${+new Date()}-${generateGuid()}`}`,
       });
     }
   }
@@ -51,7 +58,7 @@ const ResourceView = ({ dispatch, panel, subTypeList, commonList }) => {
     if (subType && dispatch) {
       dispatch({
         type: 'editor/fetchCommonList',
-        payload: subType
+        payload: subType,
       });
     }
   }, [subType]);
@@ -65,7 +72,8 @@ const ResourceView = ({ dispatch, panel, subTypeList, commonList }) => {
           style={{
             cursor: 'pointer',
           }}
-          onClick={() => handlePanelVisible(false)} />
+          onClick={() => handlePanelVisible(false)}
+        />
       </h3>
       <div className={styles.resourceList}>
         <div className={styles.resourceTabs}>
@@ -75,12 +83,15 @@ const ResourceView = ({ dispatch, panel, subTypeList, commonList }) => {
             style={{ height: panel.height }}
             onChange={name => setSubType(name)}
           >
-            {
-              subTypeList.length && subTypeList.map(typeItem => (
-                <TabPane tab={<div style={{ textAlign: 'center' }}>{typeItem.title}</div>} key={typeItem.subType}>
+            {subTypeList.length &&
+              subTypeList.map(typeItem => (
+                <TabPane
+                  tab={<div style={{ textAlign: 'center' }}>{typeItem.title}</div>}
+                  key={typeItem.subType}
+                >
                   <div style={{ height: panel.height }} className={styles.resourceItem}>
-                    {
-                      commonList.length > 0 && commonList.map(commonItem => (
+                    {commonList.length > 0 &&
+                      commonList.map(commonItem => (
                         <Card
                           hoverable
                           size="small"
@@ -91,12 +102,10 @@ const ResourceView = ({ dispatch, panel, subTypeList, commonList }) => {
                         >
                           <img alt={commonItem.title} src={commonItem.snapshot} />
                         </Card>
-                      ))
-                    }
+                      ))}
                   </div>
                 </TabPane>
-              ))
-            }
+              ))}
           </Tabs>
         </div>
       </div>
