@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-02-16 16:01:29
- * @LastEditTime: 2020-02-23 16:57:56
+ * @LastEditTime: 2020-02-24 16:24:57
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \ant-design\src\services\editor.js
@@ -55,4 +55,11 @@ export async function updatePageComponent(params) {
       data: params,
     },
   );
+}
+
+export async function fetchRenderHtml(params) {
+  return request(`http://localhost:3000/api/render`, {
+    method: 'POST',
+    data: params,
+  });
 }

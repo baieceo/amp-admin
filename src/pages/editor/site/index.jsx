@@ -11,7 +11,7 @@ import SchemaView from './components/SchemaView';
 
 const ButtonGroup = Button.Group;
 
-const send = (action, payload) => {
+const sendSandbox = (action, payload) => {
   window.frames.sandbox.postMessage(
     {
       action,
@@ -45,7 +45,7 @@ const Panel = props => {
 
 const Preview = props => {
   // console.log(props);
-  const { pageData, onPageChange } = props;
+  const { pageData } = props;
 
   return (
     <>
@@ -68,8 +68,9 @@ const Preview = props => {
                 title="sanbox"
                 src="http://localhost:3000/sandbox"
                 frameBorder="0"
-                onLoad={() => onPageChange(props)}
-                style={{ height: '300px', width: '100%', display: 'block' }}
+                scrolling="no"
+                // onLoad={() => onPageChange(props)}
+                style={{ height: '100%', width: '100%', display: 'block' }}
               />
             </Spin>
           </div>
@@ -95,13 +96,20 @@ const EditorView = props => {
   }
 
   function receivePostMessage(e) {
-    if (e.data.action === 'view-resource') {
+    const { action } = e.data;
+
+    if (action === 'view-resource') {
       dispatch({
         type: 'editor/changeSchemaView',
         payload: {
           view: 'resource',
         },
       });
+    }
+
+    // iframe 加载完成渲染页面
+    if (action === 'render-loaded') {
+      sendSandbox('mount');
     }
   }
 
@@ -138,7 +146,14 @@ const EditorView = props => {
   }
 
   function handlePageChange() {
-    send('render', {
+    console.log('handlePageChange');
+    if (dispatch) {
+      dispatch({
+        type: 'editor/fetchRenderHtml',
+      });
+    }
+
+    /* sendSandbox('render', {
       previewData: {
         componentList: [],
         data: [],
@@ -147,7 +162,7 @@ const EditorView = props => {
         siteId: editor.siteId,
         templatePath: 'pages/index/index.html',
       },
-    });
+    }); */
   }
 
   function handleResourceSelect(e) {
@@ -171,6 +186,13 @@ const EditorView = props => {
       window.removeEventListener('message', receivePostMessage, false);
     };
   }, []);
+
+  useEffect(() => {
+    if (editor.html) {
+      sendSandbox('render', editor.html);
+      // window.frames.sandbox.document.write(editor.html);
+    }
+  }, [editor.html]);
 
   return (
     <GridContent>

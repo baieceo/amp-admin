@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-02-16 14:07:47
- * @LastEditTime: 2020-02-23 17:16:43
+ * @LastEditTime: 2020-02-28 05:06:45
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \ant-design\src\models\editor.js
@@ -13,6 +13,7 @@ import {
   queryPageList,
   updateSitePage,
   updatePageComponent,
+  fetchRenderHtml,
 } from '@/services/editor';
 import maxBy from 'lodash/maxBy';
 
@@ -26,6 +27,7 @@ const EditorModel = {
     packageId: '',
     packageDetail: {},
     renderHost: 'http://render.baie.net.cn',
+    html: '',
     panel: {
       visible: true,
       height: document.body.clientHeight - 200,
@@ -272,6 +274,22 @@ const EditorModel = {
       });
     },
 
+    *fetchRenderHtml(_, { call, put, select }) {
+      const params = yield select(state => ({
+        siteId: state.editor.siteId,
+        pageId: state.editor.pageId,
+        componentList: state.editor.componentList,
+        data: [],
+      }));
+
+      const resource = yield call(fetchRenderHtml, params);
+
+      yield put({
+        type: 'saveHtml',
+        payload: resource.html,
+      });
+    },
+
     *addComment({ payload }, { call, put, select }) {
       const componentList = yield select(state => state.editor.componentList);
       const { pageId, siteId } = yield select(state => state.editor);
@@ -346,6 +364,10 @@ const EditorModel = {
 
     saveComponentList(state, action) {
       return { ...state, componentList: action.payload || [] };
+    },
+
+    saveHtml(state, action) {
+      return { ...state, html: action.payload || '' };
     },
 
     saveCurrentUser(state, action) {
