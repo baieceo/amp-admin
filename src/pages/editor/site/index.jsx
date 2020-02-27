@@ -11,7 +11,7 @@ import SchemaView from './components/SchemaView';
 
 const ButtonGroup = Button.Group;
 
-const sendSandbox = (action, payload) => {
+const send2sandbox = (action, payload) => {
   window.frames.sandbox.postMessage(
     {
       action,
@@ -109,7 +109,7 @@ const EditorView = props => {
 
     // iframe 加载完成渲染页面
     if (action === 'render-loaded') {
-      sendSandbox('mount');
+      send2sandbox('mount');
     }
   }
 
@@ -146,14 +146,13 @@ const EditorView = props => {
   }
 
   function handlePageChange() {
-    console.log('handlePageChange');
     if (dispatch) {
       dispatch({
         type: 'editor/fetchRenderHtml',
       });
     }
 
-    /* sendSandbox('render', {
+    /* send2sandbox('render', {
       previewData: {
         componentList: [],
         data: [],
@@ -165,14 +164,19 @@ const EditorView = props => {
     }); */
   }
 
-  function handleResourceSelect(e) {
-    console.log(123123, e);
+  async function handleResourceSelect(e) {
     if (dispatch) {
-      dispatch({
+      await dispatch({
         type: 'editor/addComment',
         payload: e,
       });
+
+      dispatch({
+        type: 'editor/fetchRenderHtml',
+      });
     }
+
+    console.log(22222, 'handleResourceSelect');
   }
 
   useEffect(() => {
@@ -189,8 +193,7 @@ const EditorView = props => {
 
   useEffect(() => {
     if (editor.html) {
-      sendSandbox('render', editor.html);
-      // window.frames.sandbox.document.write(editor.html);
+      send2sandbox('render', editor.html);
     }
   }, [editor.html]);
 

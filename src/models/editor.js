@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-02-16 14:07:47
- * @LastEditTime: 2020-02-28 05:06:45
+ * @LastEditTime: 2020-02-28 06:42:27
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \ant-design\src\models\editor.js
@@ -309,6 +309,8 @@ const EditorModel = {
       };
 
       yield call(updatePageComponent, params);
+
+      console.log(11111, 'model.addCompoent');
     },
   },
   reducers: {
