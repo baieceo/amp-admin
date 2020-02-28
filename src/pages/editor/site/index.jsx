@@ -44,7 +44,6 @@ const Panel = props => {
 };
 
 const Preview = props => {
-  // console.log(props);
   const { pageData } = props;
 
   return (
@@ -69,7 +68,6 @@ const Preview = props => {
                 src="http://localhost:3000/sandbox"
                 frameBorder="0"
                 scrolling="no"
-                // onLoad={() => onPageChange(props)}
                 style={{ height: '100%', width: '100%', display: 'block' }}
               />
             </Spin>
@@ -151,17 +149,6 @@ const EditorView = props => {
         type: 'editor/fetchRenderHtml',
       });
     }
-
-    /* send2sandbox('render', {
-      previewData: {
-        componentList: [],
-        data: [],
-        env: 'EDITOR',
-        pageId: editor.pageId,
-        siteId: editor.siteId,
-        templatePath: 'pages/index/index.html',
-      },
-    }); */
   }
 
   async function handleResourceSelect(e) {
@@ -175,8 +162,6 @@ const EditorView = props => {
         type: 'editor/fetchRenderHtml',
       });
     }
-
-    console.log(22222, 'handleResourceSelect');
   }
 
   useEffect(() => {
