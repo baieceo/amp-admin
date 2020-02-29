@@ -93,8 +93,8 @@ const EditorView = props => {
     }
   }
 
-  function receivePostMessage(e) {
-    const { action } = e.data;
+  async function receiveSandboxMessage(e) {
+    const { action, payload } = e.data;
 
     if (action === 'view-resource') {
       dispatch({
@@ -103,6 +103,29 @@ const EditorView = props => {
           view: 'resource',
         },
       });
+    }
+
+    if (action === 'view-schema') {
+      dispatch({
+        type: 'editor/changePanelVisible',
+        payload: true,
+      });
+
+      if (payload.packageId) {
+        await dispatch({
+          type: 'editor/fetchPackageDetail',
+          payload: payload.packageId,
+        });
+
+        dispatch({
+          type: 'editor/changeSchemaView',
+          payload: {
+            view: 'schema',
+            uid: payload.uid,
+            packageId: payload.packageId,
+          },
+        });
+      }
     }
 
     // iframe 加载完成渲染页面
@@ -164,15 +187,23 @@ const EditorView = props => {
     }
   }
 
+  async function handleUpdatePage() {
+    if (dispatch) {
+      await dispatch({
+        type: 'editor/updatePage',
+      });
+    }
+  }
+
   useEffect(() => {
     changeNoticeSiteId(Number(match.params.siteId));
 
     window.addEventListener('resize', handleWindowResize, false);
-    window.addEventListener('message', receivePostMessage, false);
+    window.addEventListener('message', receiveSandboxMessage, false);
 
     return () => {
       window.removeEventListener('resize', handleWindowResize, false);
-      window.removeEventListener('message', receivePostMessage, false);
+      window.removeEventListener('message', receiveSandboxMessage, false);
     };
   }, []);
 
@@ -196,7 +227,7 @@ const EditorView = props => {
           </div>
           <div className={styles.headerAction}>
             <ButtonGroup>
-              <Button>保存</Button>
+              <Button onClick={() => handleUpdatePage()}>保存</Button>
               <Button type="primary">发布</Button>
             </ButtonGroup>
           </div>
