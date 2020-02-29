@@ -1,6 +1,6 @@
 import React, { useRef, useEffect } from 'react';
 import { connect } from 'dva';
-import { Empty, Input, Button, Popover, Modal } from 'antd';
+import { Spin, Empty, Input, Button, Popover, Modal } from 'antd';
 import {
   CloseOutlined,
   EditOutlined,
@@ -13,39 +13,136 @@ import classNames from 'classnames';
 import styles from './PageView.less';
 
 const PageView = props => {
-  const { onPageChange } = props;
   const zIndex = 9999;
   const inputRef = useRef(null);
-  const { dispatch, pageList, siteId, pageId } = props;
+  const { dispatch, siteId, siteData, pageId } = props;
+  const { page: pageList } = siteData;
 
-  function fetchPageList(selectedIndex) {
-    if (dispatch) {
-      dispatch({
-        type: 'editor/fetchPageList',
-        payload: {
-          siteId,
-          selectedIndex,
-        },
-      });
-    }
+  // 获取站点数据
+  async function fetchSiteData() {
+    return dispatch({
+      type: 'editor/fetchSiteData',
+      payload: siteId,
+    });
   }
 
-  function handlePanelVisible(value) {
+  // 改变页面 ID
+  function changePageId(value) {
     if (dispatch) {
       dispatch({
-        type: 'editor/changePanelVisible',
+        type: 'editor/savePageId',
         payload: value,
       });
     }
   }
 
-  function handleChangePageId(value) {
+  // 改变面板是否可见
+  function changePanelVisible(value) {
     if (dispatch) {
       dispatch({
-        type: 'editor/changeNoticePageId',
+        type: 'editor/savePanelVisible',
         payload: value,
       });
     }
+  }
+
+  // 渲染页面列表
+  function renderPageList() {
+    if (!pageList) {
+      return (
+        <div className={styles.pageSpin}>
+          <Spin />
+        </div>
+      );
+    }
+
+    return (
+      <>
+        <div className={styles.pageList}>
+          {pageList.length === 0 ? (
+            <Empty />
+          ) : (
+            pageList.map(item => (
+              <div
+                className={classNames(styles.pageItem, item.id === pageId && styles.pageItemActive)}
+                key={item.id}
+                onClick={() => changePageId(item.id)}
+              >
+                <div className={styles.pageItemDrag} />
+                <div className={styles.pageItemTitle}>
+                  <h4>
+                    <span>{item.title}</span>
+                    {item.isHomePage && <em>首页</em>}
+                  </h4>
+                  <span>{item.name}</span>
+                </div>
+                <Popover
+                  placement="rightTop"
+                  trigger="hover"
+                  content={
+                    <ul className={styles.pageItemSettingPopover}>
+                      <li
+                        onClick={e => {
+                          updateHomePage(e, 'changePageTitle', item.id, item.title);
+                        }}
+                      >
+                        <EditOutlined />
+                        重命名
+                      </li>
+                      <li
+                        onClick={e => {
+                          updateHomePage(e, 'changePageName', item.id, item.name);
+                        }}
+                      >
+                        <LinkOutlined />
+                        修改路径
+                      </li>
+                      <li
+                        className={classNames(
+                          (pageList.length <= 1 || item.isHomePage) &&
+                            styles.pageItemSettingDisabled,
+                        )}
+                        onClick={async e => {
+                          if (pageList.length > 1 && !item.isHomePage) {
+                            updateHomePage(e, 'changeHomePage', item.id);
+                          }
+                        }}
+                      >
+                        <HomeOutlined />
+                        设为首页
+                      </li>
+                      <li
+                        className={classNames(
+                          (item.isHomePage || pageList.length <= 1) &&
+                            styles.pageItemSettingDisabled,
+                        )}
+                        onClick={async e => {
+                          if (pageList.length > 1 && !item.isHomePage) {
+                            updateHomePage(e, 'removePage', item.id);
+                          }
+                        }}
+                      >
+                        <DeleteOutlined />
+                        删除
+                      </li>
+                    </ul>
+                  }
+                >
+                  <span className={styles.pageItemSetting} onClick={e => stopPropagation(e)}>
+                    <SettingOutlined />
+                  </span>
+                </Popover>
+              </div>
+            ))
+          )}
+        </div>
+        <div className={styles.pageAdd}>
+          <Button block size="large" onClick={e => updateHomePage(e, 'addPage')}>
+            + 添加页面
+          </Button>
+        </div>
+      </>
+    );
   }
 
   function stopPropagation(e) {
@@ -53,9 +150,11 @@ const PageView = props => {
     e.nativeEvent.stopImmediatePropagation();
   }
 
-  function handleUpdateHomePage(e, action, pid, value) {
+  // 更新页面
+  function updateHomePage(e, action, pid, value) {
     stopPropagation(e);
 
+    // 修改首页
     if (dispatch && action === 'changeHomePage') {
       dispatch({
         type: 'editor/changeHomePage',
@@ -63,28 +162,7 @@ const PageView = props => {
       });
     }
 
-    if (dispatch && action === 'removeSitePage') {
-      Modal.confirm({
-        title: '删除页面',
-        content: '是否确认删除该页面？',
-        zIndex,
-        onOk: async () => {
-          dispatch({
-            type: 'editor/removeSitePage',
-            payload: pid,
-          });
-
-          return Promise.resolve();
-        },
-      });
-    }
-
-    if (dispatch && action === 'addSitePage') {
-      dispatch({
-        type: 'editor/addSitePage',
-      });
-    }
-
+    // 重命名页面
     if (dispatch && action === 'changePageTitle') {
       Modal.confirm({
         zIndex,
@@ -101,7 +179,7 @@ const PageView = props => {
 
           if (title) {
             dispatch({
-              type: 'editor/updatePageTitle',
+              type: 'editor/changePageTitle',
               payload: {
                 pageId: pid,
                 title,
@@ -114,6 +192,7 @@ const PageView = props => {
       });
     }
 
+    // 修改页面路径
     if (dispatch && action === 'changePageName') {
       Modal.confirm({
         zIndex,
@@ -135,7 +214,7 @@ const PageView = props => {
 
           if (v) {
             dispatch({
-              type: 'editor/updatePageName',
+              type: 'editor/changePageName',
               payload: {
                 pageId: pid,
                 name: `${v}.html`,
@@ -145,112 +224,61 @@ const PageView = props => {
         },
       });
     }
+
+    // 删除页面
+    if (dispatch && action === 'removePage') {
+      Modal.confirm({
+        title: '删除页面',
+        content: '是否确认删除该页面？',
+        zIndex,
+        onOk: async () => {
+          dispatch({
+            type: 'editor/removePage',
+            payload: pid,
+          });
+
+          return Promise.resolve();
+        },
+      });
+    }
+
+    // 新增页面
+    if (dispatch && action === 'addPage') {
+      dispatch({
+        type: 'editor/addPage',
+      });
+    }
   }
 
   // 初始化
   useEffect(() => {
-    fetchPageList(0);
-  }, []);
+    async function fetchData() {
+      const { page = [] } = await fetchSiteData();
 
-  useEffect(() => {
-    if (pageId !== -1) {
-      onPageChange();
+      if (page.length) {
+        dispatch({
+          type: 'editor/savePageId',
+          payload: page[0].id,
+        });
+      }
     }
-  }, [pageId]);
+
+    fetchData();
+  }, []);
 
   return (
     <div className={styles.pageContainer}>
       <h3>
         页面列表
         <CloseOutlined
-          key="Icon"
           style={{
             cursor: 'pointer',
           }}
-          onClick={() => handlePanelVisible(false)}
+          onClick={() => changePanelVisible(false)}
         />
       </h3>
-      <div className={styles.pageList}>
-        {pageList.length === 0 ? (
-          <Empty />
-        ) : (
-          pageList.map(item => (
-            <div
-              className={classNames(styles.pageItem, item.id === pageId && styles.pageItemActive)}
-              key={item.id}
-              onClick={() => handleChangePageId(item.id)}
-            >
-              <div className={styles.pageItemDrag} />
-              <div className={styles.pageItemTitle}>
-                <h4>
-                  <span>{item.title}</span>
-                  {item.isHomePage && <em>首页</em>}
-                </h4>
-                <span>{item.name}</span>
-              </div>
-              <Popover
-                placement="rightTop"
-                trigger="hover"
-                content={
-                  <ul className={styles.pageItemSettingPopover}>
-                    <li
-                      onClick={e => {
-                        handleUpdateHomePage(e, 'changePageTitle', item.id, item.title);
-                      }}
-                    >
-                      <EditOutlined />
-                      重命名
-                    </li>
-                    <li
-                      onClick={e => {
-                        handleUpdateHomePage(e, 'changePageName', item.id, item.name);
-                      }}
-                    >
-                      <LinkOutlined />
-                      修改路径
-                    </li>
-                    <li
-                      className={classNames(
-                        (pageList.length <= 1 || item.isHomePage) && styles.pageItemSettingDisabled,
-                      )}
-                      onClick={async e => {
-                        if (pageList.length > 1) {
-                          handleUpdateHomePage(e, 'changeHomePage', item.id);
-                        }
-                      }}
-                    >
-                      <HomeOutlined />
-                      设为首页
-                    </li>
-                    <li
-                      className={classNames(
-                        (item.isHomePage || pageList.length <= 1) && styles.pageItemSettingDisabled,
-                      )}
-                      onClick={async e => {
-                        if (pageList.length > 1) {
-                          handleUpdateHomePage(e, 'removeSitePage', item.id);
-                        }
-                      }}
-                    >
-                      <DeleteOutlined />
-                      删除
-                    </li>
-                  </ul>
-                }
-              >
-                <span className={styles.pageItemSetting} onClick={e => stopPropagation(e)}>
-                  <SettingOutlined />
-                </span>
-              </Popover>
-            </div>
-          ))
-        )}
-      </div>
-      <div className={styles.pageAdd}>
-        <Button block size="large" onClick={e => handleUpdateHomePage(e, 'addSitePage')}>
-          + 添加页面
-        </Button>
-      </div>
+
+      {renderPageList()}
     </div>
   );
 };

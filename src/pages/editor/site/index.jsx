@@ -1,6 +1,6 @@
-import { Spin, Button } from 'antd';
+import { message, Spin, Button } from 'antd';
 import React, { useEffect } from 'react';
-import { connect } from 'dva';
+import { connect, useParams } from 'dva';
 
 import { ReloadOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { GridContent } from '@ant-design/pro-layout';
@@ -22,14 +22,14 @@ const send2sandbox = (action, payload) => {
 };
 
 const Panel = props => {
-  const { panel, view, siteId, onPageChange, onResourceSelect } = props;
+  const { panel, view, siteId, onResourceSelect } = props;
 
-  if (!panel.visible || siteId === -1) {
+  if (!panel.visible || siteId === Infinity) {
     return null;
   }
 
   if (view === 'page') {
-    return <PageView onPageChange={onPageChange} />;
+    return <PageView />;
   }
 
   if (view === 'resource') {
@@ -79,7 +79,9 @@ const Preview = props => {
 };
 
 const EditorView = props => {
-  const { editor, dispatch, match } = props;
+  const { siteId } = useParams();
+  const { editor, dispatch } = props;
+  const { pageData, panel, view, html, pageId } = editor;
 
   function handleWindowResize() {
     if (dispatch) {
@@ -134,10 +136,11 @@ const EditorView = props => {
     }
   }
 
-  function changeNoticeSiteId(value) {
+  // 修改站点 ID
+  function changeSiteId(value) {
     if (dispatch) {
       dispatch({
-        type: 'editor/changeNoticeSiteId',
+        type: 'editor/saveSiteId',
         payload: value,
       });
     }
@@ -152,7 +155,7 @@ const EditorView = props => {
         },
       });
 
-      if (editor.view !== 'page') {
+      if (view !== 'page') {
         dispatch({
           type: 'editor/changePanelVisible',
           payload: true,
@@ -160,7 +163,7 @@ const EditorView = props => {
       } else {
         dispatch({
           type: 'editor/changePanelVisible',
-          payload: !editor.panel.visible,
+          payload: !panel.visible,
         });
       }
     }
@@ -187,16 +190,15 @@ const EditorView = props => {
     }
   }
 
-  async function handleUpdatePage() {
-    if (dispatch) {
-      await dispatch({
-        type: 'editor/updatePage',
-      });
-    }
+  function handleUpdatePage() {
+    return dispatch({
+      type: 'editor/updatePage',
+    });
   }
 
+  // 页面初始化
   useEffect(() => {
-    changeNoticeSiteId(Number(match.params.siteId));
+    changeSiteId(Number(siteId));
 
     window.addEventListener('resize', handleWindowResize, false);
     window.addEventListener('message', receiveSandboxMessage, false);
@@ -207,11 +209,21 @@ const EditorView = props => {
     };
   }, []);
 
+  // html 改变重新渲染页面
   useEffect(() => {
-    if (editor.html) {
-      send2sandbox('render', editor.html);
+    if (html) {
+      send2sandbox('render', html);
     }
-  }, [editor.html]);
+  }, [html]);
+
+  // 页面 ID 改变重新获取页面
+  useEffect(() => {
+    /* if (dispatch && pageId !== Infinity) {
+      dispatch({
+        type: 'editor/fetchRenderHtml',
+      });
+    } */
+  }, [pageId]);
 
   return (
     <GridContent>
@@ -221,13 +233,21 @@ const EditorView = props => {
             <div className={styles.headerNavTitle}>
               <Button type="link" onClick={() => handleTogglePagePanel()}>
                 <UnorderedListOutlined />
-                {editor.pageData.title}
+                {pageData.title}
               </Button>
             </div>
           </div>
           <div className={styles.headerAction}>
             <ButtonGroup>
-              <Button onClick={() => handleUpdatePage()}>保存</Button>
+              <Button
+                onClick={async () => {
+                  await handleUpdatePage();
+
+                  message.success('保存成功');
+                }}
+              >
+                保存
+              </Button>
               <Button type="primary">发布</Button>
             </ButtonGroup>
           </div>

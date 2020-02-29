@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-02-16 14:07:47
- * @LastEditTime: 2020-02-28 07:29:51
+ * @LastEditTime: 2020-02-29 22:53:31
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \ant-design\src\models\editor.js
@@ -11,7 +11,7 @@ import {
   queryCommonList,
   queryPackageDetail,
   queryPageList,
-  updateSitePage,
+  updatePage,
   updatePageComponent,
   fetchRenderHtml,
 } from '@/services/editor';
@@ -27,17 +27,27 @@ const EditorModel = {
     packageId: '',
     packageDetail: {},
     renderHost: 'http://render.baie.net.cn',
+
     html: '',
+
+    // 左侧面板数据
     panel: {
       visible: true,
       height: document.body.clientHeight - 200,
     },
+
+    // 站点 ID
+    siteId: Infinity,
+    // 站点全量数据
+    siteData: {},
+
+    // 选中页面在siteData.page中索引
+    pageId: Infinity,
+
     sitePage: {},
     subTypeList: [],
     commonList: [],
     componentList: [],
-    siteId: -1,
-    pageId: -1,
     pageName: '',
     pageUrl: '',
     pageList: [],
@@ -48,6 +58,154 @@ const EditorModel = {
     },
   },
   effects: {
+    // 获取站点数据
+    *fetchSiteData({ payload }, { call, put }) {
+      const response = yield call(queryPageList, payload);
+
+      yield put({
+        type: 'saveSiteData',
+        payload: response,
+      });
+
+      return response;
+    },
+    // 修改首页
+    *changeHomePage({ payload }, { put, select }) {
+      const siteData = yield select(state => ({
+        ...state.editor,
+        page: state.editor.siteData.page.map(item => {
+          const page = { ...item };
+
+          page.isHomePage = page.id === payload;
+
+          return page;
+        }),
+      }));
+
+      yield put({
+        type: 'saveSiteData',
+        payload: siteData,
+      });
+    },
+    // 修改页面标题
+    *changePageTitle({ payload }, { put, select }) {
+      const siteData = yield select(state => ({
+        ...state.editor,
+        page: state.editor.siteData.page.map(item => {
+          const page = { ...item };
+
+          if (page.id === payload.pageId) {
+            page.title = payload.title;
+          }
+
+          return page;
+        }),
+      }));
+
+      yield put({
+        type: 'saveSiteData',
+        payload: siteData,
+      });
+    },
+    // 修改页面路径
+    *changePageName({ payload }, { put, select }) {
+      const siteData = yield select(state => ({
+        ...state.editor,
+        page: state.editor.siteData.page.map(item => {
+          const page = { ...item };
+
+          if (page.id === payload.pageId) {
+            page.name = payload.name;
+            page.url = `${state.editor.renderHost}/${state.editor.siteId}/${payload.name}`;
+          }
+
+          return page;
+        }),
+      }));
+
+      yield put({
+        type: 'saveSiteData',
+        payload: siteData,
+      });
+    },
+    // 移除页面
+    *removePage({ payload }, { put, call, select }) {
+      const pageData = yield select(state => ({
+        siteId: state.editor.siteId,
+        data: {
+          page: state.editor.siteData.page.map(item => {
+            const page = { ...item };
+
+            page.isDeleted = page.id === payload;
+
+            return page;
+          }),
+        },
+      }));
+
+      const response = yield call(updatePage, pageData);
+
+      yield put({
+        type: 'saveSiteData',
+        payload: response,
+      });
+    },
+    // 新增页面
+    *addPage(_, { put, call, select }) {
+      const pageData = yield select(state => {
+        const { renderHost, siteId } = state.editor;
+        const page = [...state.editor.siteData.page];
+
+        const target = maxBy(page, o => o.pageOrder);
+        const pageOrder = target ? target.pageOrder : 0;
+        const name = `${+new Date()}.html`;
+
+        page.push({
+          componentList: [],
+          isHomePage: false,
+          meta: {},
+          name,
+          pageOrder: pageOrder + 1,
+          schemaData: [],
+          siteId,
+          snapshot: '',
+          templatePath: 'pages/detail/index.html',
+          url: `${renderHost}/${siteId}/${name}`,
+          title: '新建页面',
+        });
+
+        return {
+          siteId,
+          data: {
+            page,
+          },
+        };
+      });
+
+      const response = yield call(updatePage, pageData);
+
+      yield put({
+        type: 'saveSiteData',
+        payload: response,
+      });
+    },
+    // 更新页面
+    *updatePage(_, { put, call, select }) {
+      const pageData = yield select(state => ({
+        siteId: state.editor.siteId,
+        data: {
+          page: state.editor.siteData.page,
+        },
+      }));
+
+      const response = yield call(updatePage, pageData);
+
+      yield put({
+        type: 'saveSiteData',
+        payload: response,
+      });
+    },
+
     *fetchTypeList(_, { call, put }) {
       const response = yield call(querySubTypeList);
       yield put({
@@ -114,143 +272,6 @@ const EditorModel = {
       }
     },
 
-    *changeHomePage({ payload }, { put, call, select }) {
-      const pageData = yield select(state => ({
-        siteId: state.editor.siteId,
-        data: {
-          page: state.editor.pageList.map(item => {
-            const page = { ...item };
-
-            if (page.id === payload) {
-              page.isHomePage = true;
-            } else {
-              page.isHomePage = false;
-            }
-
-            return page;
-          }),
-        },
-      }));
-
-      const response = yield call(updateSitePage, pageData);
-
-      yield put({
-        type: 'savePageList',
-        payload: response,
-      });
-    },
-
-    *removeSitePage({ payload }, { put, call, select }) {
-      const pageData = yield select(state => ({
-        siteId: state.editor.siteId,
-        data: {
-          page: state.editor.pageList.map(item => {
-            const page = { ...item };
-
-            if (page.id === payload) {
-              page.isDeleted = true;
-            }
-
-            return page;
-          }),
-        },
-      }));
-
-      const response = yield call(updateSitePage, pageData);
-
-      yield put({
-        type: 'savePageList',
-        payload: response,
-      });
-    },
-
-    *updatePageTitle({ payload }, { put, call, select }) {
-      const pageData = yield select(state => ({
-        siteId: state.editor.siteId,
-        data: {
-          page: state.editor.pageList.map(item => {
-            const page = { ...item };
-
-            if (page.id === payload.pageId) {
-              page.title = payload.title;
-            }
-
-            return page;
-          }),
-        },
-      }));
-
-      const response = yield call(updateSitePage, pageData);
-
-      yield put({
-        type: 'savePageList',
-        payload: response,
-      });
-    },
-
-    *updatePageName({ payload }, { put, call, select }) {
-      const pageData = yield select(state => ({
-        siteId: state.editor.siteId,
-        data: {
-          page: state.editor.pageList.map(item => {
-            const page = { ...item };
-
-            if (page.id === payload.pageId) {
-              page.name = payload.name;
-              page.url = `${state.editor.renderHost}/${state.editor.siteId}/${payload.name}`;
-            }
-
-            return page;
-          }),
-        },
-      }));
-
-      const response = yield call(updateSitePage, pageData);
-
-      yield put({
-        type: 'savePageList',
-        payload: response,
-      });
-    },
-
-    *addSitePage(_, { put, call, select }) {
-      const pageData = yield select(state => {
-        const model = {
-          siteId: state.editor.siteId,
-          data: {
-            page: state.editor.pageList,
-          },
-        };
-
-        const target = maxBy(state.editor.pageList, o => o.pageOrder);
-        const pageOrder = target ? target.pageOrder : 0;
-        const name = `${+new Date()}.html`;
-
-        model.data.page.push({
-          componentList: [],
-          isHomePage: false,
-          meta: {},
-          name,
-          pageOrder: pageOrder + 1,
-          schemaData: [],
-          siteId: state.editor.siteId,
-          snapshot: '',
-          templatePath: 'pages/detail/index.html',
-          url: `${state.editor.renderHost}/${state.editor.siteId}/${name}`,
-          title: '新建页面',
-        });
-
-        return model;
-      });
-
-      const response = yield call(updateSitePage, pageData);
-
-      yield put({
-        type: 'savePageList',
-        payload: response,
-      });
-    },
-
     *changeNoticePageId({ payload }, { put, select }) {
       yield put({
         type: 'savePageId',
@@ -264,13 +285,6 @@ const EditorModel = {
       yield put({
         type: 'savePageData',
         payload: pageData,
-      });
-    },
-
-    *changeNoticeSiteId({ payload }, { put }) {
-      yield put({
-        type: 'saveSiteId',
-        payload,
       });
     },
 
@@ -314,7 +328,20 @@ const EditorModel = {
     },
   },
   reducers: {
-    changePanelVisible(state, { payload: value }) {
+    // 存储站点 ID
+    saveSiteId(state, action) {
+      return { ...state, siteId: action.payload };
+    },
+    // 存储站点数据
+    saveSiteData(state, action) {
+      return { ...state, siteData: action.payload };
+    },
+    // 存储页面 ID
+    savePageId(state, action) {
+      return { ...state, pageId: action.payload };
+    },
+    // 存储面板是否可见
+    savePanelVisible(state, { payload: value }) {
       return {
         ...state,
         panel: {
@@ -350,14 +377,6 @@ const EditorModel = {
 
     savePageList(state, action) {
       return { ...state, sitePage: action.payload || {}, pageList: action.payload.page || [] };
-    },
-
-    savePageId(state, action) {
-      return { ...state, pageId: action.payload };
-    },
-
-    saveSiteId(state, action) {
-      return { ...state, siteId: action.payload };
     },
 
     savePageData(state, action) {

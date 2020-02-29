@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-02-16 16:01:29
- * @LastEditTime: 2020-02-24 16:24:57
+ * @LastEditTime: 2020-02-29 21:36:30
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \ant-design\src\services\editor.js
@@ -24,23 +24,7 @@ export async function queryPageList(siteId) {
   return request(`http://localhost:3000/api/site/${siteId}`);
 }
 
-export async function removeSitePage(pageId) {
-  return request(`http://localhost:3000/api/site/page/remove`, {
-    method: 'POST',
-    data: {
-      pageId,
-    },
-  });
-}
-
-export async function updateHomePage(params) {
-  return request(`http://localhost:3000/api/site/page/default/update`, {
-    method: 'POST',
-    data: params,
-  });
-}
-
-export async function updateSitePage(params) {
+export async function updatePage(params) {
   return request(`http://localhost:3000/api/site/${params.siteId}`, {
     method: 'PUT',
     data: params,
