@@ -45,14 +45,14 @@ const Panel = props => {
 };
 
 const Preview = props => {
-  const { pageData } = props;
+  const { pageUrl } = props;
 
   return (
     <>
       <div className={styles.pagePathContainer}>
         <div className={styles.pagePath}>
           <div className={styles.pagePathUrl}>
-            <span>{pageData.url}</span>
+            <span>{pageUrl}</span>
           </div>
           <div className={styles.pagePathAction}>
             <ReloadOutlined />
@@ -82,12 +82,13 @@ const Preview = props => {
 const EditorView = props => {
   const { siteId } = useParams();
   const { editor, dispatch } = props;
-  const { pageData, panel, view, html, pageId } = editor;
+  const { panel, view, html, pageId, pageTitle } = editor;
+  const debounceInterval = 500;
 
   function handleWindowResize() {
     if (dispatch) {
       dispatch({
-        type: 'editor/changeWindowResize',
+        type: 'editor/saveWindowSize',
         payload: {
           width: document.body.clientWidth,
           height: document.body.clientHeight,
@@ -101,6 +102,11 @@ const EditorView = props => {
 
     if (action === 'view-resource') {
       dispatch({
+        type: 'editor/savePanelVisible',
+        payload: true,
+      });
+
+      dispatch({
         type: 'editor/changeSchemaView',
         payload: {
           view: 'resource',
@@ -110,7 +116,7 @@ const EditorView = props => {
 
     if (action === 'view-schema') {
       dispatch({
-        type: 'editor/changePanelVisible',
+        type: 'editor/savePanelVisible',
         payload: true,
       });
 
@@ -158,12 +164,12 @@ const EditorView = props => {
 
       if (view !== 'page') {
         dispatch({
-          type: 'editor/changePanelVisible',
+          type: 'editor/savePanelVisible',
           payload: true,
         });
       } else {
         dispatch({
-          type: 'editor/changePanelVisible',
+          type: 'editor/savePanelVisible',
           payload: !panel.visible,
         });
       }
@@ -224,7 +230,7 @@ const EditorView = props => {
         dispatch({
           type: 'editor/fetchRenderHtml',
         });
-      }, 500)();
+      }, debounceInterval)();
     }
   }, [pageId]);
 
@@ -236,7 +242,7 @@ const EditorView = props => {
             <div className={styles.headerNavTitle}>
               <Button type="link" onClick={() => handleTogglePagePanel()}>
                 <UnorderedListOutlined />
-                {pageData.title}
+                {pageTitle}
               </Button>
             </div>
           </div>

@@ -13,7 +13,7 @@ const ResourceView = ({ dispatch, panel, subTypeList, commonList, onSelect }) =>
   function handlePanelVisible(value) {
     if (dispatch) {
       dispatch({
-        type: 'editor/changePanelVisible',
+        type: 'editor/savePanelVisible',
         payload: value,
       });
     }

@@ -14,6 +14,7 @@ export const isAntDesignPro = () => {
   return window.location.hostname === 'preview.pro.ant.design';
 }; // 给官方演示站点用，用于关闭真实开发环境不需要使用的特性
 
+// 防抖函数
 export const debounce = function(func, wait) {
   return function() {
     if (debounceTimeoutId) clearTimeout(debounceTimeoutId);

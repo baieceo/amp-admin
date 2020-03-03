@@ -30,7 +30,7 @@ const PageView = props => {
   function changePageId(value) {
     if (dispatch) {
       dispatch({
-        type: 'editor/savePageId',
+        type: 'editor/changePageId',
         payload: value,
       });
     }
@@ -255,9 +255,9 @@ const PageView = props => {
     async function fetchData() {
       const { page = [] } = await fetchSiteData();
 
-      if (page.length) {
+      if (page.length && pageId === Infinity) {
         dispatch({
-          type: 'editor/savePageId',
+          type: 'editor/changePageId',
           payload: page[0].id,
         });
       }

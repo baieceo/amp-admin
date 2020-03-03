@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-02-16 14:07:47
- * @LastEditTime: 2020-03-03 16:26:07
+ * @LastEditTime: 2020-03-03 18:43:44
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \ant-design\src\models\editor.js
@@ -28,12 +28,13 @@ const EditorModel = {
     packageDetail: {},
     renderHost: 'http://render.baie.net.cn',
 
+    // html 代码片段
     html: '',
 
     // 左侧面板数据
     panel: {
       visible: true,
-      height: document.body.clientHeight - 200,
+      height: document.body.clientHeight - 270,
     },
 
     // 站点 ID
@@ -43,15 +44,15 @@ const EditorModel = {
 
     // 选中页面在siteData.page中索引
     pageId: Infinity,
+    // 页面标题
+    pageTitle: '',
+    // 页面地址
+    pageUrl: '',
 
-    sitePage: {},
     subTypeList: [],
     commonList: [],
     componentList: [],
-    pageName: '',
-    pageUrl: '',
-    pageList: [],
-    pageData: {},
+
     window: {
       width: document.body.clientWidth,
       height: document.body.clientHeight,
@@ -205,6 +206,45 @@ const EditorModel = {
         payload: response,
       });
     },
+    // 获取渲染 HTML
+    *fetchRenderHtml(_, { call, put, select }) {
+      const params = yield select(state => ({
+        previewData: {
+          siteId: state.editor.siteId,
+          pageId: state.editor.pageId,
+          componentList: state.editor.componentList,
+          data: [],
+        },
+      }));
+
+      const resource = yield call(fetchRenderHtml, params);
+
+      yield put({
+        type: 'saveHtml',
+        payload: resource.html,
+      });
+    },
+    // 修改页面 ID，计算 pageTitle, pageUrl
+    *changePageId({ payload }, { select, put }) {
+      const result = yield select(state => state.editor.siteData.page.find(i => i.id === payload));
+
+      if (result) {
+        yield put({
+          type: 'savePageId',
+          payload,
+        });
+
+        yield put({
+          type: 'savePageTitle',
+          payload: result.title,
+        });
+
+        yield put({
+          type: 'savePageUrl',
+          payload: result.url,
+        });
+      }
+    },
 
     *fetchTypeList(_, { call, put }) {
       const response = yield call(querySubTypeList);
@@ -242,65 +282,6 @@ const EditorModel = {
       yield put({
         type: 'savePackageDetail',
         payload: response,
-      });
-    },
-
-    *fetchPageList({ payload }, { call, put }) {
-      const response = yield call(queryPageList, payload.siteId);
-      yield put({
-        type: 'savePageList',
-        payload: response,
-      });
-
-      if (
-        payload.selectedIndex !== undefined &&
-        response.page &&
-        response.page[payload.selectedIndex]
-      ) {
-        const pageData = response.page[payload.selectedIndex];
-        const pageId = pageData.id;
-
-        yield put({
-          type: 'savePageId',
-          payload: pageId,
-        });
-
-        yield put({
-          type: 'savePageData',
-          payload: pageData,
-        });
-      }
-    },
-
-    *changeNoticePageId({ payload }, { put, select }) {
-      yield put({
-        type: 'savePageId',
-        payload,
-      });
-
-      const pageData = yield select(state =>
-        state.editor.pageList.find(item => item.id === payload),
-      );
-
-      yield put({
-        type: 'savePageData',
-        payload: pageData,
-      });
-    },
-
-    *fetchRenderHtml(_, { call, put, select }) {
-      const params = yield select(state => ({
-        siteId: state.editor.siteId,
-        pageId: state.editor.pageId,
-        componentList: state.editor.componentList,
-        data: [],
-      }));
-
-      const resource = yield call(fetchRenderHtml, params);
-
-      yield put({
-        type: 'saveHtml',
-        payload: resource.html,
       });
     },
 
@@ -348,17 +329,29 @@ const EditorModel = {
         },
       };
     },
-
-    saveSubTypeList(state, action) {
-      return { ...state, subTypeList: action.payload || [] };
+    // 存储 html 代码片段
+    saveHtml(state, action) {
+      return { ...state, html: action.payload || '' };
     },
-
-    changeWindowResize(state, action) {
+    // 存储窗口尺寸
+    saveWindowSize(state, action) {
       return {
         ...state,
         window: { ...state.window, ...action.payload },
-        panel: { ...state.panel, height: action.payload.height - 200 },
+        panel: { ...state.panel, height: action.payload.height - 270 },
       };
+    },
+    // 存储页面标题
+    savePageTitle(state, action) {
+      return { ...state, pageTitle: action.payload || '' };
+    },
+    // 存储页面 url
+    savePageUrl(state, action) {
+      return { ...state, pageUrl: action.payload || '' };
+    },
+
+    saveSubTypeList(state, action) {
+      return { ...state, subTypeList: action.payload || [] };
     },
 
     saveCommonList(state, action) {
@@ -373,41 +366,10 @@ const EditorModel = {
       return { ...state, packageDetail: action.payload || {} };
     },
 
-    savePageList(state, action) {
-      return { ...state, sitePage: action.payload || {}, pageList: action.payload.page || [] };
-    },
-
-    savePageData(state, action) {
-      return { ...state, pageData: action.payload };
-    },
-
     saveComponentList(state, action) {
       return { ...state, componentList: action.payload || [] };
     },
-
-    saveHtml(state, action) {
-      return { ...state, html: action.payload || '' };
-    },
-
-    saveCurrentUser(state, action) {
-      return { ...state, currentUser: action.payload || {} };
-    },
-
-    changeNotifyCount(
-      state = {
-        currentUser: {},
-      },
-      action,
-    ) {
-      return {
-        ...state,
-        currentUser: {
-          ...state.currentUser,
-          notifyCount: action.payload.totalCount,
-          unreadCount: action.payload.unreadCount,
-        },
-      };
-    },
   },
 };
+
 export default EditorModel;
