@@ -4,6 +4,7 @@ import { connect, useParams } from 'dva';
 
 import { ReloadOutlined, UnorderedListOutlined } from '@ant-design/icons';
 import { GridContent } from '@ant-design/pro-layout';
+import { debounce } from '@/utils/utils';
 import styles from './index.less';
 import PageView from './components/PageView';
 import ResourceView from './components/ResourceView';
@@ -218,11 +219,13 @@ const EditorView = props => {
 
   // 页面 ID 改变重新获取页面
   useEffect(() => {
-    /* if (dispatch && pageId !== Infinity) {
-      dispatch({
-        type: 'editor/fetchRenderHtml',
-      });
-    } */
+    if (dispatch && pageId !== Infinity) {
+      debounce(() => {
+        dispatch({
+          type: 'editor/fetchRenderHtml',
+        });
+      }, 500)();
+    }
   }, [pageId]);
 
   return (

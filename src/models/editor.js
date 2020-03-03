@@ -1,7 +1,7 @@
 /*
  * @Author: your name
  * @Date: 2020-02-16 14:07:47
- * @LastEditTime: 2020-02-29 22:53:31
+ * @LastEditTime: 2020-03-03 16:26:07
  * @LastEditors: Please set LastEditors
  * @Description: In User Settings Edit
  * @FilePath: \ant-design\src\models\editor.js
@@ -295,8 +295,6 @@ const EditorModel = {
         componentList: state.editor.componentList,
         data: [],
       }));
-
-      console.log('fetchRenderHtml: ', params);
 
       const resource = yield call(fetchRenderHtml, params);
 
